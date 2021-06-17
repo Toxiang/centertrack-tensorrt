@@ -164,62 +164,6 @@ namespace Track
 							static_cast<const float *>(mCudaBuffers[6]),static_cast<float *>(cudaOutputBuffer),
 							input_w/4,input_h/4,classNum,kernelSize,visThresh);
 		
-	/*
-		int h=96,w=320;
-		// 
-		cv::Mat m;
-		cv::Mat mm;
-		cv::cvtColor(img,m,CV_BGR2GRAY);
-		cv::resize(m,mm,cv::Size(320,96),0,0,CV_INTER_LINEAR);
-		cv::Mat m1 = cv::Mat(96,320,CV_8UC1);
-		cv::Mat m2 = cv::Mat(96,320,CV_8UC1);
-		cv::Mat m3 = cv::Mat(96,320,CV_8UC1);
-		
-		cv::imshow("ori_pic",mm);
-		cv::waitKey(0);
-		auto sigmoid = [&](float x){return (1 / (1 + exp(-x)));};
-		for(int i=0;i<30720;i++){
-			float prob = sigmoid(out1[i]);
-			int row = i/w%h;
-			int col = i%w;
-			m1.at<uchar>(row,col) = int(prob*255*3);
-			if(prob>0.4)
-				mm.at<uchar>(row,col) = int(prob*255);
-		}
-		for(int i=30720;i<61440;i++){
-			float prob = sigmoid(out1[i]);
-			int row = i/w%h;
-			int col = i%w;
-			m2.at<uchar>(row,col) = int(prob*255*3);
-			if(prob>0.4)
-				mm.at<uchar>(row,col) = int(prob*255);
-		}
-		for(int i=61440;i<92160;i++){
-			float prob = sigmoid(out1[i]);
-			int row = i/w%h;
-			int col = i%w;
-			m3.at<uchar>(row,col) = int(prob*255*3);
-			if(prob>0.4)
-				mm.at<uchar>(row,col) = int(prob*255);
-		}
-		cv::namedWindow("pic",cv::WINDOW_NORMAL);
-		cv::resizeWindow("pic",1024,1024);
-		cv::imshow("pic",mm);
-		
-		cv::waitKey(0);
-		cv::namedWindow("hm1",cv::WINDOW_NORMAL);
-		cv::resizeWindow("hm1",1024,1024);
-		cv::imshow("hm1",m1);
-		cv::waitKey(0);
-		cv::namedWindow("hm2",cv::WINDOW_NORMAL);
-		// cv::resizeWindow("hm2",320,96);
-		cv::imshow("hm2",m2);
-		cv::waitKey(0);
-		cv::namedWindow("hm3",cv::WINDOW_NORMAL);
-		// cv::resizeWindow("hm3",320,96);
-		cv::imshow("hm3",m3);
-		cv::waitKey(0);
-		*/
 		
 		CUDA_CHECK(cudaMemcpyAsync(res_img,cudaOutputBuffer,outputBufferSize,cudaMemcpyDeviceToHost,mCudaStream));
 		runItems++;
@@ -283,7 +227,7 @@ namespace Track
 		std::cout<<"开始处理det"<<std::endl;
 		
 		int y, x;
-		int w = 320;
+		int w = xxx;
 		int h = 96;
 		// 取前100
 		int topK = 100;
