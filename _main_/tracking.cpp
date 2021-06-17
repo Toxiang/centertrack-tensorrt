@@ -30,9 +30,6 @@ int main(int argc,const char**argv){
 
     cv::namedWindow("识别结果",cv::WINDOW_NORMAL);
     
-    // cv::Mat ii = cv::imread(options["imgFile"]);
-    // cv::resizeWindow("识别结果",320,96);
-    // cv::imshow("识别结果",ii);
     
     Track::ctTrack tk(options["engineFile"]);
     std::unique_ptr<float[]> res_img(new float[tk.outputBufferSize]);
@@ -77,52 +74,6 @@ int main(int argc,const char**argv){
         cv::imshow("识别结果",cur_img);
         cv::waitKey(0);
     }
-    // if(options["capFile"].size()>0)
-    // {
-        
-    //     std::cout<<"视频跟踪！"<<std::endl;
-    //     cv::VideoCapture cap(options["capFile"]);
-    //     // CvCapture * cc = cvCaptureFromFile("1.mp4");
-    //     // int frameH    = (int) cvGetCaptureProperty(cc, CV_CAP_PROP_FRAME_HEIGHT);  
-    //     // int frameW    = (int) cvGetCaptureProperty(cc, CV_CAP_PROP_FRAME_WIDTH);  
-    //     // int fps       = (int) cvGetCaptureProperty(cc, CV_CAP_PROP_FPS); 
-    //     // std::cout<<frameH<<" "<<frameW<<s" "<<fps<<std::endl;
-    //     std::cout<<cap.get(CV_CAP_PROP_FRAME_HEIGHT)<<" "<<cap.get(CV_CAP_PROP_FRAME_WIDTH)<<cap.get(CV_CAP_PROP_FPS)<<std::endl;
-    //     cv::Size size = cv::Size(1920,1088);
-    //     cv::VideoWriter out("res-3.avi",CV_FOURCC('D', 'I', 'V', 'X'),80,size);
-    //     while (cap.read(cur_img))
-    //     {
-            
-    //         std::vector<float>pre_hm;
-    //         for(int i=0;i<491520;i++){
-    //             pre_hm.push_back(0);
-    //         }
-    //         auto inputData = prepareImage(cur_img);
-    //         auto preData = prepareImage(cur_img);
-    //         tk.doInference(preData.data(),inputData.data(),pre_hm.data(), res_img.get());
-    //         // tk.printTime();
-
-    //         // int num_det = static_cast<int>(res_img[0]);
-
-    //         // std::vector<Detection> result;
-
-    //         // result.resize(num_det);
-
-    //         // memcpy(result.data(), &res_img[1], num_det * sizeof(Detection));
-
-    //         // postProcess(result,cur_img);
-
-    //         // drawImg(result,cur_img,color);
-    //         // out.write(cur_img);
-    //         // cv::imshow("识别结果",cur_img);
-    //         // if((cv::waitKey(1)& 0xff) == 27){
-    //         //     cv::destroyAllWindows();
-    //         //     return 0;
-    //         // };
-
-    //     }
-
-    // }
 
     std::cout<<"结束！"<<std::endl;
     return 0;
