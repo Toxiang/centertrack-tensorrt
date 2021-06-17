@@ -4,7 +4,7 @@
 
 
 
-#从https://github.com/CaoWGG/TensorRT-CenterNet 改写过来
+#从https://github.com/CaoWGG/TensorRT-CenterNet 改写过来  
 对tensorrt和centertrack了解一般般   
 只是能跑通 效果也一般般
 没有使用前一帧的heatmap 把所有图片都作为首帧检测  
