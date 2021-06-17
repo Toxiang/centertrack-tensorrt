@@ -9,18 +9,18 @@
 
 namespace Track{
     //阈值
-    constexpr static float visThresh = 0.3;
+    constexpr static float visThresh = xxx;
     //maxpool size
-    constexpr static int kernelSize = 3;
+    constexpr static int kernelSize = xxx;
 
     //网络参数
-    constexpr static int input_h = 384;
-    constexpr static int input_w = 1280;
-    constexpr static int channel = 3;
-    constexpr static int classNum = 3;
-    constexpr static float mean[] = {0.408, 0.447, 0.470};
-    constexpr static float std[] = {0.289, 0.274, 0.278};
-    constexpr static char *className[]= {(char*)"ped",(char*)"car",(char*)"cyc"};
+    constexpr static int input_h = xxx;
+    constexpr static int input_w = xxx;
+    constexpr static int channel = xxx;
+    constexpr static int classNum = xxx;
+    constexpr static float mean[] = {xxx, xxx, xxx};
+    constexpr static float std[] = {xxx, xxx, xxx};
+    constexpr static char *className[]= {(char*)"xxx",(char*)"xxx",(char*)"xxx"};
 
 
 }
