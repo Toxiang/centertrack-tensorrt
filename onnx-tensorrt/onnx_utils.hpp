@@ -15,30 +15,8 @@
 namespace
 {
 
-//! Describes occurrence of a named dimension.
-class NamedDimension
-{
-public:
-    //! TensorRT tensor.
-    nvinfer1::ITensor* tensor;
-
-    //! Index of tensor dimension to be named.
-    int32_t index;
-
-    //! ONNX "dim param" that is the name of the dimension.
-    std::string dimParam;
-
-    //! Construct a NamedDimension where the tensor will be filled in later.
-    NamedDimension(int32_t index_, const std::string& dimParam_)
-        : tensor(nullptr)
-        , index(index_)
-        , dimParam(dimParam_)
-    {
-    }
-};
-
 template <typename OnnxDims>
-bool convertOnnxDims(OnnxDims const& onnxDims, nvinfer1::Dims& trtDims, std::vector<NamedDimension>& namedDims)
+bool convertOnnxDims(OnnxDims const& onnxDims, nvinfer1::Dims& trtDims)
 {
     std::vector<int32_t> onnxDimsVec;
     for (const auto& onnxDim : onnxDims)
@@ -50,10 +28,6 @@ bool convertOnnxDims(OnnxDims const& onnxDims, nvinfer1::Dims& trtDims, std::vec
         }
         else
         {
-            if (!onnxDim.dim_param().empty())
-            {
-                namedDims.emplace_back(static_cast<int32_t>(onnxDimsVec.size()), onnxDim.dim_param());
-            }
             const int32_t dim = onnxDim.dim_param() == "" ? (onnxDim.dim_value() >= 0 ? onnxDim.dim_value() : -1) : -1;
             onnxDimsVec.emplace_back(dim);
         }

@@ -2,34 +2,6 @@
 
 # ONNX-TensorRT Changelog
 
-## TensorRT 8.2 GA Release - 2021-11-23
-
-### Added
-
-See the 8.2 EA release notes for new features added in TensorRT 8.2.
-
-### Fixes
-- Removed duplicate constant layer checks that caused some performance regressions
-- Fixed expand dynamic shape calculations
-- Added parser-side checks for Scatter layer support 
-
-## TensorRT 8.2 EA Release - 2021-10-04
-### Added
-- Added support for the following ONNX operators:
-  - Einsum
-  - IsNan
-  - GatherND
-  - Scatter
-  - ScatterElements
-  - ScatterND
-  - Sign
-  - Round
-
-### Updated
-- Updated `Gather` and `GatherElements` implementations to natively support negative indices
-- Updated `Pad` layer to support ND padding, along with `edge` and `reflect` padding mode support
-- Updated `If` layer with general performance improvements.
-
 ## TensorRT 8.0 Release - 2021-07-02
 ### Added
  - Rehauled resize operator, now fully supporting the following modes:
