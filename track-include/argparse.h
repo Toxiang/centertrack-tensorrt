@@ -1,8 +1,3 @@
-//
-//copy from onnx-tensorrt
-//2021.5.17
-//
-
 
 #ifndef OPTIONPARSER_H_
 #define OPTIONPARSER_H_

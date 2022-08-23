@@ -17,6 +17,10 @@ link_directories(${OpenCV_LIBRARIES_DIRS})
 file(GLOB CPP_SRC *.cpp)
 file(GLOB CU_SRC *.cu)
 
+file(GLOB log_src ../track-include/common/logger.cpp)
+
+
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Ofast")
 list(APPEND CUDA_NVCC_FLAGS "-D_FORCE_INLINES -Xcompiler -fPIC")
 
@@ -26,9 +30,9 @@ include_directories(${CUDA_INCLUDE_DIRS}
                     ../track-include
                     ../onnx-tensorrt)
 
-cuda_add_library(Track SHARED ${CPP_SRC} ${CU_SRC})
+cuda_add_library(Track SHARED ${CPP_SRC} ${CU_SRC} ${log_src})
 target_link_libraries(Track
         ${TENSORRT_LIBRARY_INFER}
         ${OpenCV_LIBS}
         nvonnxparser
-        nvonnxparser_runtime)
+        )
