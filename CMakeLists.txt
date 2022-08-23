@@ -24,4 +24,5 @@ set(CUDA_DIR "/usr/local/cuda-10.2")
 ## build
 add_subdirectory(onnx-tensorrt)
 add_subdirectory(track)
+add_subdirectory(plugins)
 add_subdirectory(_main_)

@@ -204,7 +204,7 @@ namespace Track
      std::cout<<"wilson  constructNetwork<<<<<<<<<<<1 \n"<<std::endl;
      printf("mParams.onnxFileName:%s \n",mParams.onnxFileName.c_str());
      printf("mParams.dataDirs:%d \n",mParams.dataDirs.size());
-     std::string onnxpath = "model/ddd_3dop.onnx";
+     std::string onnxpath = "model/nuScenes_3Dtracking.onnx";
     //auto parsed = parser->parseFromFile(locateFile(mParams.onnxFileName, mParams.dataDirs).c_str(),
         //static_cast<int>(sample::gLogger.getReportableSeverity()));
     auto parsed = parser->parseFromFile(onnxpath.c_str(),static_cast<int>(sample::gLogger.getReportableSeverity()));
