@@ -9,10 +9,10 @@ set(CMAKE_CXX_STANDARD  11)
 
 # Enable compiler warnings
 if (CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wno-deprecated-declarations -Wno-unused-function")
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -g2 -ggdb -Wno-deprecated-declarations -Wno-unused-function")
 endif()
 if (MSVC)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /W4")
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /W4 -g2 -ggdb")
 endif()
 
 # Build the libraries with -fPIC

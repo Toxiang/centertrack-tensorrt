@@ -17,7 +17,6 @@ namespace Track
 		using namespace std;
 		nvinfer1::IHostMemory *modelStream{nullptr};
 		int verbosity = (int)nvinfer1::ILogger::Severity::kWARNING;
-	
         memset(&mParams,0,sizeof(mParams));
          mParams.onnxFileName = onnxFile;
 
@@ -154,9 +153,7 @@ namespace Track
 		modelStream = engine->serialize();
 		cout<<"ssss"<<std::endl;
 		engine->destroy();
-        network->destroy();
-        builder->destroy();
-        parser->destroy();
+    
         assert(modelStream != nullptr);
         mRunTime = nvinfer1::createInferRuntime(sample::gLogger);
         assert(mRunTime != nullptr);
@@ -174,6 +171,7 @@ namespace Track
 		using namespace std;
 
 		fstream file;
+		initLibNvInferPlugins(&sample::gLogger.getTRTLogger(),"");
 		file.open(engineFile,ios::binary|ios::in);
 		if(!file.is_open())
 		{
@@ -191,8 +189,14 @@ namespace Track
 		cout<<"--------------反序列化--------------"<<endl;
 		mRunTime = nvinfer1::createInferRuntime(sample::gLogger);
 		assert(mRunTime!=nullptr);
-		//mEngine = mRunTime->deserializeCudaEngine(data.get(),length,mPlugins);
+		if (mParams.dlaCore >= 0)
+        {
+            mRunTime->setDLACore(mParams.dlaCore);
+        }
+		mEngine = std::shared_ptr<nvinfer1::ICudaEngine>(
+            mRunTime->deserializeCudaEngine(data.get(), length, nullptr), samplesCommon::InferDeleter());
 		assert(mEngine!=nullptr);
+		mRunTime->destroy();
 		initEngine();
 	}
 
@@ -208,10 +212,7 @@ namespace Track
     //auto parsed = parser->parseFromFile(locateFile(mParams.onnxFileName, mParams.dataDirs).c_str(),
         //static_cast<int>(sample::gLogger.getReportableSeverity()));
     auto parsed = parser->parseFromFile(onnxpath.c_str(),static_cast<int>(sample::gLogger.getReportableSeverity()));
-
-
-
-        
+   
     printf("parsed = %d \n",parsed);
       std::cout<<"wilson  constructNetwork<<<<<<<<<<<1.1 \n"<<std::endl;
     if (!parsed)

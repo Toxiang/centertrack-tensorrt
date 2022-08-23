@@ -19,7 +19,8 @@ file(GLOB CU_SRC *.cu)
 
 file(GLOB log_src ../track-include/common/logger.cpp)
 
-
+set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Ofast")
 list(APPEND CUDA_NVCC_FLAGS "-D_FORCE_INLINES -Xcompiler -fPIC")
@@ -28,9 +29,42 @@ include_directories(${CUDA_INCLUDE_DIRS}
                     ${TENSORRT_INCLUDE_DIR}
                     ${OpenCV_INCLUDE_DIRS}
                     ../track-include
-                    ../onnx-tensorrt)
+                    ../onnx-tensorrt
+                    ../plugins/include
+                    ../plugins/parsers/common
+                    ../plugins/onnx
+                    ../plugins/plugin
+                    ../plugins/plugin/common)
 
-cuda_add_library(Track SHARED ${CPP_SRC} ${CU_SRC} ${log_src})
+  set(PLUGIN_LISTS
+                    ../plugins/plugin/DCNv2
+                    #../plugins/plugin/instanceNormalizationPlugin
+                    )
+                    
+include_directories(../plugins/plugin/common 
+                    ../plugins/plugin/common/kernels 
+                    ../plugins/samples/common)
+
+
+                foreach(PLUGIN_ITER ${PLUGIN_LISTS})
+                    #message(STATUS "PLUGIN_ITER:${PLUGIN_ITER} \n")
+                    include_directories(${PLUGIN_ITER})
+                    #file(GLOB SRC_CU_PLUGINS ${PLUGIN_ITER}/*cu)
+                    #file(GLOB SRC_CPP_PLUGINS ${PLUGIN_ITER}/*cpp)
+                    #list(APPEND ALL_SRCS "${PLUGIN_ITER}/*.cu")     
+                endforeach(PLUGIN_ITER)
+                
+                file(GLOB ALL_SRCS 
+                    ../plugins/plugin/DCNv2/*.cpp
+                    ../plugins/plugin/InferPlugin.cpp    
+                    #../plugins/plugin/instanceNormalizationPlugin/*.cpp
+                
+                
+                    ../plugins/plugin/DCNv2/*.cu
+        
+                    )                   
+
+cuda_add_library(Track SHARED ${ALL_SRCS} ${CPP_SRC} ${CU_SRC} ${log_src})
 target_link_libraries(Track
         ${TENSORRT_LIBRARY_INFER}
         ${OpenCV_LIBS}

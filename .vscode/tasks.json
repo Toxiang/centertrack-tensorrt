@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "trackbuild",
+			"command": "make",
+			"args": [
+				"-j6"
+			],
+			"options": {
+				"cwd": "/home/nvidia/xuewei/centertrack-tensorrt/build"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "编译器: /usr/bin/aarch64-linux-gnu-g++"
+		}
+	]
+}
