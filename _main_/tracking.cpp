@@ -44,7 +44,7 @@ int main(int argc,const char**argv)
         auto cur_data = prepareImage(cur_img);
         std::cout<<cur_img.rows<<" "<<cur_img.cols<<std::endl;
         std::vector<float>pre_hm;
-        for(int i=0;i<491520;i++){
+        for(int i=0;i<cur_img.rows*cur_img.cols;i++){
             pre_hm.push_back(0);
         }
         std::vector<Detection> result;
@@ -55,7 +55,7 @@ int main(int argc,const char**argv)
         //使用inference2 走.cu
         tk.doInference2(cur_data.data(),pre_data.data(),pre_hm.data(),res_img.get());
         int num_det = static_cast<int>(res_img[0]);
-        // std::cout<<"检测到的det:"<<num_det<<std::endl;
+        std::cout<<"检测到的det:"<<num_det<<std::endl;
         // 
         std::vector<Detection>::iterator iter;
         result.resize(num_det);

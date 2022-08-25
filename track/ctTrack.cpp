@@ -238,10 +238,40 @@ namespace Track
     return true;
 }
 
+ /* void ctTrack::InitEngine() 
+    {
+        const int maxBatchSize = 1;
+        mContext = mEngine->createExecutionContext();
+        assert(mContext != nullptr);
+        mContext->setProfiler(&mProfiler);
+        int nbBindings = mEngine->getNbBindings();
+        // std::cout<<"mEngine->getNbBindings()"<<nbBindings<<std::endl;
 
+        // if (nbBindings > 4) forwardFace= true;
+        // face: 5, Helmet: 4, ctnet: 4, ddd: 7
+        if (nbBindings == 4) forwardFace = 0;
+        else if (nbBindings == 5) forwardFace = 1;
+        else forwardFace = 2;
+                
+
+        mCudaBuffers.resize(nbBindings);
+        mBindBufferSizes.resize(nbBindings);
+        int64_t totalSize = 0;
+        for (int i = 0; i < nbBindings; ++i)
+        {
+            nvinfer1::Dims dims = mEngine->getBindingDimensions(i);
+            nvinfer1::DataType dtype = mEngine->getBindingDataType(i);
+            totalSize = volume(dims) * maxBatchSize * getElementSize(dtype);
+            mBindBufferSizes[i] = totalSize;
+            mCudaBuffers[i] = safeCudaMalloc(totalSize);
+        }
+        outputBufferSize = mBindBufferSizes[1] * 6 ;
+        cudaOutputBuffer = safeCudaMalloc(outputBufferSize);
+        CUDA_CHECK(cudaStreamCreate(&mCudaStream));
+    } */
 
 	//初始化引擎
-	void ctTrack::initEngine()
+	 void ctTrack::initEngine()
 	{
 		// std::cout<<"iii"<<std::endl;
 		mContext = mEngine->createExecutionContext();
@@ -288,7 +318,7 @@ namespace Track
         outputBufferSize = mBindBufferSizes[3]*10;
         cudaOutputBuffer = safeCudaMalloc(outputBufferSize);
 		CUDA_CHECK(cudaStreamCreate(&mCudaStream));
-	}
+	} 
 	
 	//前向推理 处理部分使用cuda加速
 	void ctTrack::doInference2(const void *cur_img,const void *pre_img,const void *pre_hm,

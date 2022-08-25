@@ -109,6 +109,8 @@ namespace Track
         MODE Mode;
 
         void *mCudaBuffers[7];
+        //std::vector<void*> mCudaBuffers;
+        //std::vector<int64_t> mBindBufferSizes;
         std::vector<int64_t>mBindBufferSizes;
         void * cudaOutputBuffer;
         int outSize1,outSize2,outSize3,outSize4;

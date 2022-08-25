@@ -12,8 +12,8 @@ namespace Track{
     constexpr static float visThresh = 0.3; // threshold for visualization
     constexpr static int kernelSize = 3 ;  /// nms maxpool size
     //网络参数, FOR 3D TRACKING
-   constexpr static int input_w = 1280 ;
-    constexpr static int input_h = 384 ;
+   constexpr static int input_w = 800 ;
+    constexpr static int input_h = 448 ;
     constexpr static int channel = 3 ;
     constexpr static int classNum = 3 ;
     constexpr static float mean[]= {0.485, 0.456, 0.406};
