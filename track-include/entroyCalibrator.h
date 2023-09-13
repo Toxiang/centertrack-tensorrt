@@ -11,19 +11,19 @@
 namespace nvinfer1 {
     class int8EntroyCalibrator : public nvinfer1::IInt8EntropyCalibrator {
     public:
-        int8EntroyCalibrator(const int &bacthSize,
+        int8EntroyCalibrator (const int &bacthSize,
                              const std::string &imgPath,
                              const std::string &calibTablePath);
 
         virtual ~int8EntroyCalibrator();
 
-        int getBatchSize() const override { return batchSize; }
+        int getBatchSize() const noexcept override { return batchSize; }
 
-        bool getBatch(void *bindings[], const char *names[], int nbBindings) override;
+        bool getBatch(void *bindings[], const char *names[], int nbBindings) noexcept override;
 
-        const void *readCalibrationCache(std::size_t &length) override;
+        const void *readCalibrationCache(std::size_t &length) noexcept override;
 
-        void writeCalibrationCache(const void *ptr, std::size_t length) override;
+        void writeCalibrationCache(const void *ptr, std::size_t length) noexcept override;
 
     private:
 

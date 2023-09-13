@@ -12,7 +12,8 @@ namespace nvinfer1
 
     int8EntroyCalibrator::int8EntroyCalibrator(const int &bacthSize, const std::string &imgPath,
         const std::string &calibTablePath):batchSize(bacthSize),calibTablePath(calibTablePath),imageIndex(0),forwardFace(
-            false){
+            false) 
+            {
         int inputChannel = Track::channel;
         int inputH = Track::input_h;
         int inputW = Track::input_w;
@@ -22,7 +23,7 @@ namespace nvinfer1
             std::string temp;
             while (std::getline(f,temp)) imgPaths.push_back(temp);
 
-        }
+        } 
         batchData = new float[inputCount];
         if(Track::className[0]=="face")
         {
@@ -40,7 +41,7 @@ namespace nvinfer1
             delete[] batchData;
     }
 
-    bool int8EntroyCalibrator::getBatch(void **bindings, const char **names, int nbBindings){
+    bool int8EntroyCalibrator::getBatch(void **bindings, const char **names, int nbBindings) noexcept {
         if (imageIndex + batchSize > int(imgPaths.size()))
             return false;
         // load batch
@@ -65,7 +66,7 @@ namespace nvinfer1
         bindings[0] = deviceInput;
         return true;
     }
-    const void* int8EntroyCalibrator::readCalibrationCache(std::size_t &length)
+    const void* int8EntroyCalibrator::readCalibrationCache(std::size_t &length) noexcept
     {
         calibrationCache.clear();
         std::ifstream input(calibTablePath, std::ios::binary);
@@ -78,7 +79,7 @@ namespace nvinfer1
         return length ? &calibrationCache[0] : nullptr;
     }
 
-    void int8EntroyCalibrator::writeCalibrationCache(const void *cache, std::size_t length)
+    void int8EntroyCalibrator::writeCalibrationCache(const void *cache, std::size_t length) noexcept
     {
         std::ofstream output(calibTablePath, std::ios::binary);
         output.write(reinterpret_cast<const char*>(cache), length);

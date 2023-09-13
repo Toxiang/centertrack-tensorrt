@@ -12,11 +12,12 @@
 #include"ctTrack.h"
 #include"utils.h"
 
-int main(int argc,const char**argv){
+int main(int argc,const char**argv)
+{
     optparse::OptionParser parser;
     parser.add_option("-e","--input-engine-file").dest("engineFile").help("引擎文件");
-    parser.add_option("-i","--input-img-file").dest("imgFile").set_default("1.jpg");
-    // parser.add_option("-c","input-video-file").dest("capFile").set_default("test.h264");
+    parser.add_option("-i","--input-img-file").dest("imgFile").set_default("pics/1.jpg");
+    //parser.add_option("-c","input-video-file").dest("capFile").set_default("test.h264");
     optparse::Values options = parser.parse_args(argc,argv);
     if(options["engineFile"].size()==0){
         std::cout<<"-------------没有输入引擎文件-----------------"<<std::endl;
@@ -38,12 +39,12 @@ int main(int argc,const char**argv){
     if(options["imgFile"].size()>0)
     {
         cur_img = cv::imread(options["imgFile"]);
-        pre_img = cv::imread("2.jpg");
+        pre_img = cv::imread("pics/2.jpg");
         auto pre_data = prepareImage(pre_img);
         auto cur_data = prepareImage(cur_img);
         std::cout<<cur_img.rows<<" "<<cur_img.cols<<std::endl;
         std::vector<float>pre_hm;
-        for(int i=0;i<491520;i++){
+        for(int i=0;i<cur_img.rows*cur_img.cols;i++){
             pre_hm.push_back(0);
         }
         std::vector<Detection> result;
@@ -54,7 +55,7 @@ int main(int argc,const char**argv){
         //使用inference2 走.cu
         tk.doInference2(cur_data.data(),pre_data.data(),pre_hm.data(),res_img.get());
         int num_det = static_cast<int>(res_img[0]);
-        // std::cout<<"检测到的det:"<<num_det<<std::endl;
+        std::cout<<"检测到的det:"<<num_det<<std::endl;
         // 
         std::vector<Detection>::iterator iter;
         result.resize(num_det);
@@ -75,9 +76,39 @@ int main(int argc,const char**argv){
         cv::waitKey(0);
     }
 
+    /* if(options["capFile"].size()>0)
+    {
+        cv::VideoCapture cap(options["capFile"]);
+        while (cap.read(img))
+        {
+            auto inputData = prepareImage(img,net.forwardFace);
+
+            net.doInference(inputData.data(), outputData.get());
+            net.printTime();
+
+            int num_det = static_cast<int>(outputData[0]);
+
+            std::vector<Detection> result;
+
+            result.resize(num_det);
+
+            memcpy(result.data(), &outputData[1], num_det * sizeof(Detection));
+
+            postProcess(result,img,net.forwardFace);
+
+            drawImg(result,img,color,net.forwardFace);
+
+            cv::imshow("result",img);
+            if((cv::waitKey(1)& 0xff) == 27){
+                cv::destroyAllWindows();
+                return 0;
+            };
+
+        }
+
+    } */
+
     std::cout<<"结束！"<<std::endl;
     return 0;
-
-
 
 }

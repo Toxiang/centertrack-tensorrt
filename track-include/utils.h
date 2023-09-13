@@ -49,7 +49,7 @@ public:
         std::cout<<"total time = "<<totalTime/runTimes<<"ms"<<std::endl;
     }
 
-    virtual void reportLayerTime(const char* layerName,float ms)
+    virtual void reportLayerTime(const char* layerName,float ms) noexcept
     {
         mProfile[layerName].count++;
         mProfile[layerName].time += ms;
@@ -66,7 +66,7 @@ public:
     {
     }
 
-    void log(Severity severity, const char* msg) override
+    void log(Severity severity, const char* msg) noexcept
     {
         // suppress messages with severity enum value greater than the reportable
         if (severity > reportableSeverity)
@@ -81,7 +81,8 @@ public:
             default: std::cerr << "UNKNOWN: "; break;
         }
         std::cerr << msg << std::endl;
-    }
+    };
+    
     Severity reportableSeverity;
 };
 

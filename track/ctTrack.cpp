@@ -1,6 +1,3 @@
-//
-// Toxic code in 2021.5.17
-//
 
 #include<assert.h>
 #include<fstream>
@@ -9,43 +6,141 @@
 // #include"trackForwardGPU.h"
 #include"trackForwardGPU.h"
 
-static Logger gLogger;
+
 
 namespace Track 
 {
 	//track 构造函数 ：构建引擎
 	ctTrack::ctTrack(const std::string& onnxFile,const std::string& calibFile,Track::MODE mode): 
-		mContext(nullptr),mEngine(nullptr),mRunTime(nullptr),Mode(mode),runItems(0),mPlugins(nullptr)
+		mContext(nullptr),mEngine(nullptr),mRunTime(nullptr),Mode(mode),runItems(0)
 	{
 		using namespace std;
 		nvinfer1::IHostMemory *modelStream{nullptr};
 		int verbosity = (int)nvinfer1::ILogger::Severity::kWARNING;
-		nvinfer1::IBuilder* builder = nvinfer1::createInferBuilder(gLogger);
-		nvinfer1::INetworkDefinition* network = builder->createNetwork();
-		
-		mPlugins = nvonnxparser::createPluginFactory(gLogger);
-		auto parser = nvonnxparser::createParser(*network,gLogger);
-		if(!parser->parseFromFile(onnxFile.c_str(),verbosity))
-		{
-			string msg("----------解析onnx文件失败-----------");
-			gLogger.log(nvinfer1::ILogger::Severity::kERROR,msg.c_str());
-			exit(EXIT_FAILURE);
-		}
+        memset(&mParams,0,sizeof(mParams));
+         mParams.onnxFileName = onnxFile;
 
-		const int maxBatchSize = 1;
+        const int maxBatchSize = 1;
+    
+        auto builder = SampleUniquePtr<nvinfer1::IBuilder>(nvinfer1::createInferBuilder(sample::gLogger.getTRTLogger()));
+
+        
+        if (!builder)
+        {
+            std::cout<<"build failed!"<<std::endl;
+        }
+
+        const auto explicitBatch = 1U << static_cast<uint32_t>(NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);
+        auto network = SampleUniquePtr<nvinfer1::INetworkDefinition>(builder->createNetworkV2(explicitBatch));
+
+        if (!network)
+        {
+            std::cout<<"build failed!"<<std::endl;
+        }
+
+        auto config = SampleUniquePtr<nvinfer1::IBuilderConfig>(builder->createBuilderConfig());
+        if (!config)
+        {
+            std::cout<<"build failed!"<<std::endl;
+        }
+
+        auto parser
+            = SampleUniquePtr<nvonnxparser::IParser>(nvonnxparser::createParser(*network, sample::gLogger.getTRTLogger()));
+        if (!parser)
+        {
+            std::cout<<"build failed!"<<std::endl;
+        }
+
+        auto constructed = constructNetwork(builder, network, config, parser);
+        if (!constructed)
+        {
+            std::cout<<"build failed!"<<std::endl;
+        }
+
+        // CUDA stream used for profiling by the builder.
+        auto profileStream = samplesCommon::makeCudaStream();
+        if (!profileStream)
+        {
+            std::cout<<"build failed!"<<std::endl;
+        }
+
+        config->setProfileStream(*profileStream);
+
+        SampleUniquePtr<IHostMemory> plan{builder->buildSerializedNetwork(*network, *config)};
+        if (!plan)
+        {
+            std::cout<<"build failed!"<<std::endl;
+        }
+
+        SampleUniquePtr<IRuntime> runtime{createInferRuntime(sample::gLogger.getTRTLogger())};
+        if (!runtime)
+        {
+            std::cout<<"build failed!"<<std::endl;
+        }
+
+        mEngine = std::shared_ptr<nvinfer1::ICudaEngine>(
+            runtime->deserializeCudaEngine(plan->data(), plan->size()), samplesCommon::InferDeleter());
+        if (!mEngine)
+        {
+            std::cout<<"build failed!"<<std::endl;
+        }
+
+
+
+        //ASSERT(network->getNbInputs() == 1);
+        mInputDims = network->getInput(0)->getDimensions();
+       // ASSERT(mInputDims.nbDims == 4);
+
+       // ASSERT(network->getNbOutputs() == 1);
+        mOutputDims = network->getOutput(0)->getDimensions();
+       // ASSERT(mOutputDims.nbDims == 2);   
+
+
+
 		builder->setMaxBatchSize(maxBatchSize);
-		builder->setMaxWorkspaceSize(1<<30);//1G
+		//builder->setMaxWorkspaceSize(1<<30);//1G
 
 		// nvinfer1::int8EntroyCalibrator *calibrator = nullptr;
 		// if(calibFile.size()>0)
 		// 	calibrator = new nvinfer1::int8EntroyCalibrator(maxBatchSize,calibFile,"calib.table");
 		cout<<"---------开始构建引擎----------"<<endl;
-		nvinfer1::ICudaEngine* engine = builder->buildCudaEngine(*network);
-		if(!engine){
-			string error_msg = "无法创建引擎";
-			gLogger.log(nvinfer1::ILogger::Severity::kERROR,error_msg.c_str());
-			exit(EXIT_FAILURE);
-		}
+
+        // use config to determine which mode ultilized
+        if (Mode== MODE::INT8)
+        {
+            //nvinfer1::IInt8Calibrator* calibrator;
+            std::cout <<"setInt8Mode"<<std::endl;
+            if (!builder->platformHasFastInt8())
+            {
+                std::cout << "Notice: the platform do not has fast for int8" << std::endl;
+            }  
+        }
+        else if (Mode == MODE::FLOAT16)
+        {
+            std::cout <<"setFp16Mode"<<std::endl;
+            if (!builder->platformHasFastFp16())
+                std::cout << "Notice: the platform do not has fast for fp16" << std::endl;
+          
+        }
+        else if (Mode == MODE::FLOAT32)
+        {
+            std::cout <<"setFp32Mode"<<std::endl;
+            if (!builder->platformHasTf32())
+                std::cout << "Notice: the platform do not has fast for fp16" << std::endl;
+        
+        };
+        // config input shape
+
+        //nvinfer1::ICudaEngine* engine = builder->buildCudaEngine(*network);
+
+        nvinfer1::ICudaEngine* engine = builder->buildEngineWithConfig(*network,*config);
+        if (!engine){
+            std::string error_message ="Unable to create engine";
+            sample::gLogger.log(nvinfer1::ILogger::Severity::kERROR, error_message.c_str());
+            exit(-1);
+        }
+       
+	
 		cout<<"-------------引擎构建结束---------------"<<endl;
 
 		// if(calibrator){
@@ -58,13 +153,11 @@ namespace Track
 		modelStream = engine->serialize();
 		cout<<"ssss"<<std::endl;
 		engine->destroy();
-        network->destroy();
-        builder->destroy();
-        parser->destroy();
+    
         assert(modelStream != nullptr);
-        mRunTime = nvinfer1::createInferRuntime(gLogger);
+        mRunTime = nvinfer1::createInferRuntime(sample::gLogger);
         assert(mRunTime != nullptr);
-        mEngine= mRunTime->deserializeCudaEngine(modelStream->data(), modelStream->size(), mPlugins);
+       // mEngine= mRunTime->deserializeCudaEngine(modelStream->data(), modelStream->size(), mPlugins);
         assert(mEngine != nullptr);
         modelStream->destroy();
         initEngine();
@@ -72,12 +165,13 @@ namespace Track
 	}
 	//读取引擎文件反序列化 
 	ctTrack::ctTrack(const std::string& engineFile):
-	mContext(nullptr),mEngine(nullptr),mRunTime(nullptr),Mode(MODE::FLOAT32),runItems(0),
-            mPlugins(nullptr)
+	mContext(nullptr),mEngine(nullptr),mRunTime(nullptr),Mode(MODE::FLOAT32),runItems(0)
+           
 	{
 		using namespace std;
 
 		fstream file;
+		initLibNvInferPlugins(&sample::gLogger.getTRTLogger(),"");
 		file.open(engineFile,ios::binary|ios::in);
 		if(!file.is_open())
 		{
@@ -91,16 +185,93 @@ namespace Track
 		file.read(data.get(),length);
 		file.close();
 
-		mPlugins = nvonnxparser::createPluginFactory(gLogger);
+	
 		cout<<"--------------反序列化--------------"<<endl;
-		mRunTime = nvinfer1::createInferRuntime(gLogger);
+		mRunTime = nvinfer1::createInferRuntime(sample::gLogger);
 		assert(mRunTime!=nullptr);
-		mEngine = mRunTime->deserializeCudaEngine(data.get(),length,mPlugins);
+		if (mParams.dlaCore >= 0)
+        {
+            mRunTime->setDLACore(mParams.dlaCore);
+        }
+		mEngine = std::shared_ptr<nvinfer1::ICudaEngine>(
+            mRunTime->deserializeCudaEngine(data.get(), length, nullptr), samplesCommon::InferDeleter());
 		assert(mEngine!=nullptr);
+		mRunTime->destroy();
 		initEngine();
 	}
+
+	   bool ctTrack::constructNetwork(SampleUniquePtr<nvinfer1::IBuilder>& builder,
+    SampleUniquePtr<nvinfer1::INetworkDefinition>& network, SampleUniquePtr<nvinfer1::IBuilderConfig>& config,
+    SampleUniquePtr<nvonnxparser::IParser>& parser)
+{
+
+     std::cout<<"wilson  constructNetwork<<<<<<<<<<<1 \n"<<std::endl;
+     printf("mParams.onnxFileName:%s \n",mParams.onnxFileName.c_str());
+     printf("mParams.dataDirs:%d \n",mParams.dataDirs.size());
+     std::string onnxpath = "model/nuScenes_3Dtracking.onnx";
+    //auto parsed = parser->parseFromFile(locateFile(mParams.onnxFileName, mParams.dataDirs).c_str(),
+        //static_cast<int>(sample::gLogger.getReportableSeverity()));
+    auto parsed = parser->parseFromFile(onnxpath.c_str(),static_cast<int>(sample::gLogger.getReportableSeverity()));
+   
+    printf("parsed = %d \n",parsed);
+      std::cout<<"wilson  constructNetwork<<<<<<<<<<<1.1 \n"<<std::endl;
+    if (!parsed)
+    {
+        std::cout<<"parsed is null, return false \n"<<std::endl;
+        return false;
+    }
+
+    config->setMaxWorkspaceSize(16_MiB);
+     std::cout<<"wilson  constructNetwork<<<<<<<<<<<1.2 \n"<<std::endl;
+    if (mParams.fp16)
+    {
+        config->setFlag(BuilderFlag::kFP16);
+    }
+    if (mParams.int8)
+    {
+        config->setFlag(BuilderFlag::kINT8);
+        samplesCommon::setAllDynamicRanges(network.get(), 127.0f, 127.0f);
+    }
+    std::cout<<"wilson  constructNetwork<<<<<<<<<<<1.3 \n"<<std::endl;
+    //samplesCommon::enableDLA(builder.get(), config.get(), mParams.dlaCore);
+    std::cout<<"wilson  constructNetwork<<<<<<<<<<<2 \n"<<std::endl;
+    return true;
+}
+
+ /* void ctTrack::InitEngine() 
+    {
+        const int maxBatchSize = 1;
+        mContext = mEngine->createExecutionContext();
+        assert(mContext != nullptr);
+        mContext->setProfiler(&mProfiler);
+        int nbBindings = mEngine->getNbBindings();
+        // std::cout<<"mEngine->getNbBindings()"<<nbBindings<<std::endl;
+
+        // if (nbBindings > 4) forwardFace= true;
+        // face: 5, Helmet: 4, ctnet: 4, ddd: 7
+        if (nbBindings == 4) forwardFace = 0;
+        else if (nbBindings == 5) forwardFace = 1;
+        else forwardFace = 2;
+                
+
+        mCudaBuffers.resize(nbBindings);
+        mBindBufferSizes.resize(nbBindings);
+        int64_t totalSize = 0;
+        for (int i = 0; i < nbBindings; ++i)
+        {
+            nvinfer1::Dims dims = mEngine->getBindingDimensions(i);
+            nvinfer1::DataType dtype = mEngine->getBindingDataType(i);
+            totalSize = volume(dims) * maxBatchSize * getElementSize(dtype);
+            mBindBufferSizes[i] = totalSize;
+            mCudaBuffers[i] = safeCudaMalloc(totalSize);
+        }
+        outputBufferSize = mBindBufferSizes[1] * 6 ;
+        cudaOutputBuffer = safeCudaMalloc(outputBufferSize);
+        CUDA_CHECK(cudaStreamCreate(&mCudaStream));
+    } */
+
 	//初始化引擎
-	void ctTrack::initEngine()
+	 void ctTrack::initEngine()
 	{
 		// std::cout<<"iii"<<std::endl;
 		mContext = mEngine->createExecutionContext();
@@ -147,7 +318,7 @@ namespace Track
         outputBufferSize = mBindBufferSizes[3]*10;
         cudaOutputBuffer = safeCudaMalloc(outputBufferSize);
 		CUDA_CHECK(cudaStreamCreate(&mCudaStream));
-	}
+	} 
 	
 	//前向推理 处理部分使用cuda加速
 	void ctTrack::doInference2(const void *cur_img,const void *pre_img,const void *pre_hm,
@@ -227,7 +398,9 @@ namespace Track
 		std::cout<<"开始处理det"<<std::endl;
 		
 		int y, x;
-		int w = xxx;
+
+		int w = Track::input_w;
+
 		int h = 96;
 		// 取前100
 		int topK = 100;

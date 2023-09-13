@@ -8,19 +8,17 @@
 #define CTTRACK_TRT_CTTRACKCONFIG_H
 
 namespace Track{
-    //阈值
-    constexpr static float visThresh = xxx;
-    //maxpool size
-    constexpr static int kernelSize = xxx;
 
-    //网络参数
-    constexpr static int input_h = xxx;
-    constexpr static int input_w = xxx;
-    constexpr static int channel = xxx;
-    constexpr static int classNum = xxx;
-    constexpr static float mean[] = {xxx, xxx, xxx};
-    constexpr static float std[] = {xxx, xxx, xxx};
-    constexpr static char *className[]= {(char*)"xxx",(char*)"xxx",(char*)"xxx"};
+    constexpr static float visThresh = 0.3; // threshold for visualization
+    constexpr static int kernelSize = 3 ;  /// nms maxpool size
+    //网络参数, FOR 3D TRACKING
+   constexpr static int input_w = 800 ;
+    constexpr static int input_h = 448 ;
+    constexpr static int channel = 3 ;
+    constexpr static int classNum = 3 ;
+    constexpr static float mean[]= {0.485, 0.456, 0.406};
+    constexpr static float std[] = {0.229, 0.224, 0.225};
+    constexpr static char *className[]= {(char*)"pedestrian", (char*)"car", (char*)"cyclist"};
 
 
 }
